@@ -2,7 +2,6 @@
 
 require 'omniauth-oauth2'
 require 'json/jwt'
-require 'pry'
 
 module OmniAuth
   module Strategies

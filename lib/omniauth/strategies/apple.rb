@@ -20,7 +20,7 @@ module OmniAuth
              scope: 'email name'
       option :authorized_client_ids, []
 
-      option :nonce, :session # :session, :local, or :ignore
+      option :nonce, :session # :session, :param, or :ignore
 
       uid { id_info[:sub] }
 

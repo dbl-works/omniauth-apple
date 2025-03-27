@@ -29,7 +29,8 @@ Rails.application.config.middleware.use OmniAuth::Builder do
              scope: 'email name',
              team_id: ENV['TEAM_ID'],
              key_id: ENV['KEY_ID'],
-             pem: ENV['PRIVATE_KEY']
+             pem: ENV['PRIVATE_KEY'],
+             nonce: :session # :session, :param, or :ignore. Set this to ":param" in an API only backend
            }
 end
 ```

@@ -20,6 +20,8 @@ module OmniAuth
              scope: 'email name'
       option :authorized_client_ids, []
 
+      option :nonce, :session # :session, :local, or :ignore
+
       uid { id_info[:sub] }
 
       # Documentation on parameters
@@ -70,11 +72,34 @@ module OmniAuth
       end
 
       def new_nonce
-        session['omniauth.nonce'] = SecureRandom.urlsafe_base64(16)
+        nonce = SecureRandom.urlsafe_base64(16)
+        case options.nonce
+        when :session
+          session['omniauth.nonce'] = nonce
+        end
+        nonce
       end
 
       def stored_nonce
-        session.delete('omniauth.nonce')
+        case options.nonce
+        when :session
+          session.delete('omniauth.nonce')
+        when :param
+          request.params['nonce']
+        end
+      end
+
+      def verify_nonce!(id_token)
+        case options.nonce
+        when :session
+          invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
+        when :param
+          invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
+        when :ignore
+          true
+        else
+          raise ArgumentError, "Invalid nonce option: #{options.nonce}. Must be :session, :param, or :ignore"
+        end
       end
 
       def id_info
@@ -126,10 +151,6 @@ module OmniAuth
 
       def verify_exp!(id_token)
         invalid_claim! :exp unless id_token[:exp] >= Time.now.to_i
-      end
-
-      def verify_nonce!(id_token)
-        invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
       end
 
       def invalid_claim!(claim)

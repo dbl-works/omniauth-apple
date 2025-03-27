@@ -90,16 +90,10 @@ module OmniAuth
       end
 
       def verify_nonce!(id_token)
-        case options.nonce
-        when :session
-          invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
-        when :param
-          invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
-        when :ignore
-          true
-        else
-          raise ArgumentError, "Invalid nonce option: #{options.nonce}. Must be :session, :param, or :ignore"
-        end
+        return true if options.nonce == :ignore
+        raise ArgumentError, "Invalid nonce option: #{options.nonce}. Must be :session, :param, or :ignore" unless [:session, :param].include?(options.nonce)
+
+        invalid_claim! :nonce unless id_token[:nonce] && id_token[:nonce] == stored_nonce
       end
 
       def id_info

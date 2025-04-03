@@ -202,15 +202,16 @@ module OmniAuth
       end
 
       def client_secret
-        jwt = JSON::JWT.new(
+        payload = {
           iss: options.team_id,
           aud: ISSUER,
-          sub: client_id,
-          iat: Time.now,
-          exp: Time.now + 60
-        )
-        jwt.kid = options.key_id
-        jwt.sign(private_key).to_s
+          sub: options.client_id,
+          iat: Time.now.to_i,
+          exp: Time.now.to_i + 60,
+        }
+        headers = { kid: options.key_id }
+
+        ::JWT.encode(payload, private_key, "ES256", headers)
       end
 
       def private_key
